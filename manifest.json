@@ -2,7 +2,18 @@
 	"manifest_version": 2,
 	"name": "new-tab-url",
 	"version": "0.2.1",
-	"description": "Set a custom URL for the new tab page.",
+	"description": "Set a custom URL for the new tab page. Very simple.",
+	
+	"developer": {
+		"name": "comnom",
+		"url": "https://github.com/comnom/new-tab-url"
+	},
+	
+	"applications": {
+		"gecko": {
+			"strict_min_version": "57"
+		}
+	},
 	
 	"permissions": ["tabs", "storage"],
 	
