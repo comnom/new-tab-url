@@ -23,7 +23,6 @@ function checkTab(tab) {
 	}
 	
 	if (tab.title == "New Tab") {
-		console.log(tab.title + " " + tab.id + " " + tab.status);
 		if (tab.openerTabId) {
 			return;
 		}
