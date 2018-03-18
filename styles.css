@@ -1,0 +1,52 @@
+#formText {
+	font: caption;
+	font-size: 15px;
+	color: #0c0c0d;
+}
+
+#newTabURL {
+	font: caption;
+	font-size: 15px;
+	color: #0c0c0d;
+	border: 1px solid #d7d7d7;
+	border-radius: 2px;
+	box-shadow: 0 0 0 transparent;
+	padding: 4px 8px;
+	outline: 0;
+}
+
+#newTabURL:hover {
+	border: 1px solid #bebebe;
+}
+
+#newTabURL:focus {
+	border: 1px solid #0a84ff;
+}
+
+#newTabURL:invalid {
+	border: 1px solid #ff0039;
+}
+
+#saveButton {
+	font: caption;
+	color: #0c0c0d;
+	background-color: #fafafa;
+	border: 1px solid #d7d7d7;
+	border-radius: 2px;
+	box-shadow: 0 0 0 transparent;
+	font-size: 15px;
+	padding: 4px 12px;
+	outline: 0 !important;
+	transition-duration: 250ms;
+	transition-property: box-shadow, border;
+}
+
+#saveButton:hover {
+	background-color: #ebebeb;
+	border: 1px solid #d7d7d7;
+}
+
+#saveButton:active {
+	background-color: #d7d7d7;
+	border: 1px solid #d7d7d7;
+}
