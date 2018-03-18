@@ -1,6 +1,6 @@
 function saveURL(event) {
 	event.preventDefault();
-	var newURL = document.querySelector("#newTabURL").value;
+	var newURL = document.querySelector("#newTabURL").value || "about:home";
 	browser.storage.local.set({url: newURL});
 }
 
