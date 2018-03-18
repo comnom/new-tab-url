@@ -11,24 +11,82 @@
 		
 	"suprise" new tabs:
 		undo closed tab		- new tab opens, onCreated fires
+		new window			- windows.onCreated fires, 
+								new tab opens, tabs.onCreated fires
 */
+
+
+
+// Array of window ids used this session.
+var sessionWindows = [];
+
+
+
+// Class representing a session window's id and whether 
+// we should allow redirection.
+class windowFlags {
+	constructor(id, isNew) {
+		this.id = id;
+		this.isNew = isNew;
+	}
+}
+
+
+
+// Cheesy error handling.
+function doError(error) {
+	console.log(error);
+}
+
+
+
+// Store the id for the main window.
+function setMainWindow(window) {
+	var mainWindow = new windowFlags(window.id, false);
+	sessionWindows.push(mainWindow)
+}
+
+
+var getMainWindow = browser.windows.getCurrent();
+getMainWindow.then(setMainWindow);
+
+
 
 function checkTab(tab) {
 	function redirectTab(result) {
-		browser.tabs.update(tab.id, {url: result.url})
-	}
-	
-	function doError(error) {
-		console.log(error);
+		browser.tabs.update(tab.id, {url: result.url, loadReplace: true});
 	}
 	
 	if (tab.title == "New Tab") {
-		if (tab.openerTabId) {
+		if (tab.openerTabId || tab.TAB_ID_NONE) {
 			return;
 		}
+		
+		// Handle the first instance of a newly opened window.
+		var hasWindow = false;
+		for (i = 0; i < sessionWindows.length; i++) {
+			if (sessionWindows[i].id == tab.windowId) {
+				hasWindow = true;
+				if (sessionWindows[i].isNew) {
+					sessionWindows[i].isNew = false;
+					return;
+				}
+				else {
+					break;
+				}
+			}
+		}
+		if (!hasWindow) {
+			var newWindow = new windowFlags(tab.windowId, false);
+			sessionWindows.push(newWindow);
+			return;
+		}
+		
 		var getURL = browser.storage.local.get("url");
 		getURL.then(redirectTab, doError);
 	}
 }
+
+
 
 browser.tabs.onCreated.addListener(checkTab);
