@@ -89,4 +89,20 @@ function checkTab(tab) {
 
 
 
+// Reset a windows "isNew" status if it gets removed.
+// This is just to guard against redirecting restored windows first tabs.
+
+// Note: The default restore closed window doesn't seem to need this,
+// but I'm not sure if other methods of restoring windows (ie extensions) will.
+function toggleWindow(windowId) {
+	for (i = 0; i < sessionWindows.length; i++) {
+		if (sessionWindows[i].id == windowId) {
+			sessionWindows[i].isNew = true;
+		}
+	}
+}
+
+
+
 browser.tabs.onCreated.addListener(checkTab);
+browser.windows.onRemoved.addListener(toggleWindow);
