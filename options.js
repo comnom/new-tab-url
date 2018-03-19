@@ -1,20 +1,18 @@
 function saveURL(event) {
 	event.preventDefault();
-	var newURL = document.querySelector("#newTabURL").value || "about:home";
+	const newURL = document.querySelector("#newTabURL").value || "about:home";
 	browser.storage.local.set({url: newURL});
 }
 
-function restoreOptions() {
-	function setURL(result) {
-		document.querySelector("#newTabURL").value = result.url || "about:home";
-	}
-	
-	function doError(error) {
-		console.log(error);
-	}
-	
-	var getURL = browser.storage.local.get("url");
-	getURL.then(setURL, doError);
+async function restoreOptions() {
+	let urlResult = await browser.storage.local.get("url").catch((error) =>
+		{console.log(error);});
+		
+	const selector = document.querySelector("#newTabURL");
+	if (urlResult !== undefined)
+		selector.value = urlResult.url || "about:home";
+	else
+		selector.value = "about:home";
 }
 
 document.addEventListener("DOMContentLoaded", restoreOptions);

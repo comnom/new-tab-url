@@ -1,24 +1,5 @@
-/*
-	explicitly opening a new tab:
-		the + button  		- new tab opens, onCreated fires
-		ctrl T        		- new tab opens, onCreated fires
-		
-	via links:
-		a target=_blank 	- new tab opens, onCreated fires
-		middle mouse  		- new tab opens, onCreated does not fire
-		context menu		- new tab opens, onCreated does not fire
-		ctrl click			- new tab opens, onCreated does not fire
-		
-	"suprise" new tabs:
-		undo closed tab		- new tab opens, onCreated fires
-		new window			- windows.onCreated fires, 
-								new tab opens, tabs.onCreated fires
-*/
-
-
-
 // Array of window ids used this session.
-var sessionWindows = [];
+const sessionWindows = [];
 
 
 
@@ -32,58 +13,55 @@ class windowFlags {
 }
 
 
+function getSessionWindow(id) {
+	let window = null;
+	for (i = 0; i < sessionWindows.length; i++) {
+		if (sessionWindows[i].id == id) {
+			window = sessionWindows[i];
+			break;
+		}
+	}
+	return window;
+}
 
-// Cheesy error handling.
-function doError(error) {
-	console.log(error);
+
+function pushSessionWindow(id, isNew) {
+	sessionWindows.push(new windowFlags(id, isNew));
 }
 
 
 
 // Store the id for the main window.
-function setMainWindow(window) {
-	var mainWindow = new windowFlags(window.id, false);
-	sessionWindows.push(mainWindow)
+async function setMainWindow() {
+	let window = await browser.windows.getCurrent().catch((error) => 
+		{console.log(error);});
+		
+	if (window !== undefined)
+		pushSessionWindow(window.id, false);
 }
 
 
-var getMainWindow = browser.windows.getCurrent();
-getMainWindow.then(setMainWindow);
 
-
-
-function checkTab(tab) {
-	function redirectTab(result) {
-		browser.tabs.update(tab.id, {url: result.url, loadReplace: true});
-	}
+async function checkTab(tab) {
+	if (tab.openerTabId || tab.TAB_ID_NONE)
+		return;
 	
 	if (tab.title == "New Tab") {
-		if (tab.openerTabId || tab.TAB_ID_NONE) {
+		const parentWindow = getSessionWindow(tab.windowId);
+		if (parentWindow === null) {
+			pushSessionWindow(tab.windowId, false);
+			return;
+		}
+		else if (parentWindow.isNew) {
+			parentWindow.isNew = false;
 			return;
 		}
 		
-		// Handle the first instance of a newly opened window.
-		var hasWindow = false;
-		for (i = 0; i < sessionWindows.length; i++) {
-			if (sessionWindows[i].id == tab.windowId) {
-				hasWindow = true;
-				if (sessionWindows[i].isNew) {
-					sessionWindows[i].isNew = false;
-					return;
-				}
-				else {
-					break;
-				}
-			}
-		}
-		if (!hasWindow) {
-			var newWindow = new windowFlags(tab.windowId, false);
-			sessionWindows.push(newWindow);
-			return;
-		}
-		
-		var getURL = browser.storage.local.get("url");
-		getURL.then(redirectTab, doError);
+		let urlResult = await browser.storage.local.get("url").catch((error) =>
+			{console.log(error);});
+			
+		if (urlResult !== undefined)
+			browser.tabs.update(tab.id, {url: urlResult.url, loadReplace: true});
 	}
 }
 
@@ -95,14 +73,13 @@ function checkTab(tab) {
 // Note: The default restore closed window doesn't seem to need this,
 // but I'm not sure if other methods of restoring windows (ie extensions) will.
 function toggleWindow(windowId) {
-	for (i = 0; i < sessionWindows.length; i++) {
-		if (sessionWindows[i].id == windowId) {
-			sessionWindows[i].isNew = true;
-		}
-	}
+	const window = getSessionWindow(windowId);
+	if (window !== null)
+		window.isNew = true;
 }
 
 
 
 browser.tabs.onCreated.addListener(checkTab);
 browser.windows.onRemoved.addListener(toggleWindow);
+setMainWindow();
