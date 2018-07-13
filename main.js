@@ -14,8 +14,8 @@ class windowFlags {
 
 
 function getSessionWindow(id) {
-	let window = null;
-	for (i = 0; i < sessionWindows.length; i++) {
+	var window = null;
+	for (var i = 0; i < sessionWindows.length; i++) {
 		if (sessionWindows[i].id == id) {
 			window = sessionWindows[i];
 			break;
@@ -33,7 +33,7 @@ function pushSessionWindow(id, isNew) {
 
 // Store the id for the main window.
 async function setMainWindow() {
-	let window = await browser.windows.getCurrent().catch((error) => 
+	var window = await browser.windows.getCurrent().catch((error) => 
 		{console.log(error);});
 		
 	if (window !== undefined)
@@ -46,7 +46,7 @@ async function checkTab(tab) {
 	if (tab.openerTabId || tab.TAB_ID_NONE)
 		return;
 	
-	if (tab.title == "New Tab") {
+	if (tab.title == "New Tab" || tab.title == "Private Browsing") {
 		const parentWindow = getSessionWindow(tab.windowId);
 		if (parentWindow === null) {
 			pushSessionWindow(tab.windowId, false);
@@ -57,7 +57,7 @@ async function checkTab(tab) {
 			return;
 		}
 		
-		let urlResult = await browser.storage.local.get("url").catch((error) =>
+		var urlResult = await browser.storage.local.get("url").catch((error) =>
 			{console.log(error);});
 			
 		if (urlResult !== undefined)
