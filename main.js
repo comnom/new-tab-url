@@ -1,3 +1,9 @@
+/* main.js */
+
+"use strict";
+
+
+
 // Array of window ids used this session.
 const sessionWindows = [];
 
@@ -13,6 +19,7 @@ class windowFlags {
 }
 
 
+
 function getSessionWindow(id) {
 	var window = null;
 	for (var i = 0; i < sessionWindows.length; i++) {
@@ -25,6 +32,7 @@ function getSessionWindow(id) {
 }
 
 
+
 function pushSessionWindow(id, isNew) {
 	sessionWindows.push(new windowFlags(id, isNew));
 }
@@ -33,7 +41,7 @@ function pushSessionWindow(id, isNew) {
 
 // Store the id for the main window.
 async function setMainWindow() {
-	var window = await browser.windows.getCurrent().catch((error) => 
+	const window = await browser.windows.getCurrent().catch((error) => 
 		{console.log(error);});
 		
 	if (window !== undefined)
@@ -46,18 +54,22 @@ async function checkTab(tab) {
 	if (tab.openerTabId || tab.TAB_ID_NONE)
 		return;
 	
-	if (tab.title == "New Tab" || tab.title == "Private Browsing") {
-		const parentWindow = getSessionWindow(tab.windowId);
-		if (parentWindow === null) {
-			pushSessionWindow(tab.windowId, false);
-			return;
-		}
-		else if (parentWindow.isNew) {
-			parentWindow.isNew = false;
-			return;
+	if ((tab.title === "New Tab" || tab.title === "Private Browsing") &&
+			(tab.url === "about:newtab" || tab.url === "about:blank")) {
+		
+		if (browser.runtime.PlatformOs !== "android") {
+			const parentWindow = getSessionWindow(tab.windowId);
+			if (parentWindow === null) {
+				pushSessionWindow(tab.windowId, false);
+				return;
+			}
+			else if (parentWindow.isNew) {
+				parentWindow.isNew = false;
+				return;
+			}
 		}
 		
-		var urlResult = await browser.storage.local.get("url").catch((error) =>
+		const urlResult = await browser.storage.local.get("url").catch((error) =>
 			{console.log(error);});
 			
 		if (urlResult !== undefined)
@@ -81,5 +93,8 @@ function toggleWindow(windowId) {
 
 
 browser.tabs.onCreated.addListener(checkTab);
-browser.windows.onRemoved.addListener(toggleWindow);
-setMainWindow();
+
+if (browser.runtime.PlatformOs !== "android") {
+	browser.windows.onRemoved.addListener(toggleWindow);
+	setMainWindow();
+}

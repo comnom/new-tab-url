@@ -1,11 +1,19 @@
+/* options.js */
+
+"use strict";
+
+
+
 function saveURL(event) {
 	event.preventDefault();
 	const newURL = document.querySelector("#newTabURL").value || "about:home";
 	browser.storage.local.set({url: newURL});
 }
 
+
+
 async function restoreOptions() {
-	let urlResult = await browser.storage.local.get("url").catch((error) =>
+	const urlResult = await browser.storage.local.get("url").catch((error) =>
 		{console.log(error);});
 		
 	const selector = document.querySelector("#newTabURL");
@@ -14,6 +22,8 @@ async function restoreOptions() {
 	else
 		selector.value = "about:home";
 }
+
+
 
 document.addEventListener("DOMContentLoaded", restoreOptions);
 document.querySelector("form").addEventListener("submit", saveURL);
